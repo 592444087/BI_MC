@@ -27,4 +27,3 @@ for index in range(0,6):
     f = open(file_path,'w')
     f.write(ddl_string+comment_string)
     f.close()
-    #df
