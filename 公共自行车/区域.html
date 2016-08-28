@@ -1,0 +1,823 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=te0l8qRkSgWFINfVK0jlOTGT"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/library/RectangleZoom/1.2/src/RectangleZoom_min.js"></script>
+    <script type="text/javascript" src="http://192.168.80.72:17001/analyticsRes/dist/Mapvt_4.js"></script>
+    <script type="text/javascript" src="http://192.168.80.72:17001/analyticsRes/dist/randomColor.js"></script>
+    <!--加载鼠标绘制工具-->
+	<script type="text/javascript" src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js"></script>
+	<link rel="stylesheet" href="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.css" />
+
+    <title>自行车地图</title>
+    <style type="text/css">
+	  #container{height:800px;width:100%; top:-42px;}
+	  #r-result{width:100%;}
+
+	/*点位样式*/
+	.div_czButton{ display:inline; position:absolute; top:-30px; right:10px; float:right;}
+	.div_czButton ul{ position:relative; top:0px; margin:0px; padding:0px;}
+	.div_czButton li{ list-style:none;float:left; text-align:center; border:#C4C7CC 1px solid; border-right:0px; border-left:#ECEDEF 1px solid;}
+	
+	.div_czButton a:hover{ cursor:pointer;}
+	
+	.div_czButton .sx a:hover , .div_czButton .sx_c a{ background: url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/sx_c.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	.div_czButton .jxfd a:hover , .div_czButton .jxfd_c a{ background: url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/jxfd_c.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	.div_czButton .rlt a:hover , .div_czButton .rlt_c a{ background:url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/rlt_c.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	.div_czButton .djh a:hover , .div_czButton .djh_c a{ background:url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/djh_c.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	.div_czButton .pao a:hover , .div_czButton .pao_c a{ background: url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/pao_c.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	.div_czButton .hqy a:hover , .div_czButton .hqy_c a{ background:url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/hqy_c.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	
+	.div_czButton .sx a{ background: url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/sx.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	.div_czButton .jxfd a{ background: url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/jxfd.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	.div_czButton .rlt a{ background:url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/rlt.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	.div_czButton .djh a{ background:url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/djh.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	.div_czButton .pao a{ background:url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/pao.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	.div_czButton .hqy a{ background:url(http://192.168.80.72:17001/analyticsRes/mapimages/toolsbar/hqy.png) no-repeat center 0px;width:26px;height:26px;display:block;}
+	
+	
+	.closeTool{
+	    width:16px;
+	    height:16px;
+	    position:absolute;
+	    top:8px;
+	    right:10px;
+	    cursor:pointer;
+	    z-index:101;
+	    background:white url(./images/toolsbar/close.png) no-repeat center center;
+	    display:none;
+	}
+	
+</style>	
+</head>
+<body>
+
+<div style="position:relative;" mouseover="rflagover">
+
+  <div id="container" style="position:relative;" >
+	 
+	 </div>
+
+				<!--工具栏-->
+				<div class="div_czButton">
+						<ul>
+							<li class="sx" title="刷新" style="border-left:#C4C7CC 1px solid;">
+								<a onclick="checkCzButton(this)"></a>
+							</li>
+							<li class="jxfd" title="全屏">
+								<a onclick="checkCzButton(this)"></a>
+							</li>
+							<li class="rlt" title="矩形放大">
+								<a onclick="checkCzButton(this)"></a>
+							</li>
+							<li class="djh" title="显示点位" style="border-right:#C4C7CC 1px solid;">
+								<a onclick="checkCzButton(this)"></a>
+							</li>
+							<li class="pao" title="切换空满率" style="border-right:#C4C7CC 1px solid;">
+								<a onclick="qieAlert()"></a>
+							</li>		
+						</ul>
+	      </div>
+</div>
+
+ 
+
+
+ <script type="text/javascript">
+		var map = new BMap.Map('container', {
+	    enableMapClick: false,
+	    minZoom: 4
+    });
+
+
+    // 第一步创建mapv示例
+    var mapv = new Mapv({
+			  drawTypeControl: true,
+		  	map: map  // 百度地图的map实例
+    });
+    
+    //全屏标记
+    var fullScreenFlag = false;
+    var point = new BMap.Point(120.322669, 30.236386);		
+		map.centerAndZoom(point,12); // 初始化地图，设置中心点坐标和地图级别
+		map.addControl(new BMap.NavigationControl({type:BMAP_NAVIGATION_CONTROL_SMALL}));
+		map.enableScrollWheelZoom(); // 允许滚轮缩放
+		var myDrag = new BMapLib.RectangleZoom(map, {
+   			followText: "拖拽鼠标进行操作"
+    });
+
+		//是否支持拖拽放大
+		var EnLargeFlag = true;
+		function controlEnlarge(){
+			if(!EnLargeFlag){
+				myDrag.open();//开启拉框放大
+				EnLargeFlag = true;
+			}else{
+				myDrag.close();  //关闭拉框放大
+				EnLargeFlag = false;
+			}
+		}
+
+//工具栏切换显示
+function checkCzButton(obj){
+    var liCss=$(obj).parent().attr('class');	
+	//循环获得div_czButton下面所有的操作按钮，并且设置为不选中的状态
+	$(".div_czButton li").each(function(i,dom){
+		var tempCss=$(this).attr('class');
+		if(tempCss.substring(tempCss.length,tempCss.length-2)=="_c"){
+			var newCss=tempCss.substring(0,tempCss.length-2);
+			$(this).removeClass(tempCss);			
+			$(this).attr("class",newCss);	
+		}
+	});
+	//将当前的操作按钮设置成选中的状态
+	if(liCss.substring(liCss.length,liCss.length-2)!="_c"){
+		var newCss=liCss+"_c";
+		$(obj).parent().removeClass(liCss);			
+		$(obj).parent().attr("class",newCss);	
+	}	
+	if($(obj).parent().hasClass("jxfd_c") || $(obj).parent().hasClass("jxfd")){//全屏
+	      if(!fullScreenFlag){
+	        fullScreen();
+	        pagefull();
+	        fullScreenFlag = true;
+        }else{
+        	exitfullscreen()
+        }
+	}else if($(obj).parent().hasClass("rlt_c") || $(obj).parent().hasClass("rlt")){//放大
+        controlEnlarge();     
+	}else if($(obj).parent().hasClass("djh_c") || $(obj).parent().hasClass("djh")){//显示点位
+        controlPointsShow();
+        if(EnLargeFlag){myDrag.close();EnLargeFlag = false;}//关闭拉框放大
+	}else if($(obj).parent().hasClass("sx_c") || $(obj).parent().hasClass("sx")){//刷新
+        if(EnLargeFlag){myDrag.close();EnLargeFlag = false;}//关闭拉框放大 
+        $(obj).parent().removeClass("sx_c");        	
+		    $(obj).parent().attr("class","sx");
+        var url = window.location.href;
+        location.href = url;
+	}
+} 
+
+//颜色数组
+var colorArrMapv=['rgba(255, 255, 0, 0.8)','rgba(253, 98, 104, 0.8)','rgba(255, 146, 149, 0.8)','rgba(255, 241, 193, 0.8)',
+'rgba(110, 176, 253, 0.8)','rgba(52, 139, 251, 0.8)','rgba(17, 102, 252)'];
+var colorChoroplethArr = ["#CCCCCC","#FFFF00","#37C83C","#FF0000"];
+//var colorChoroplethArr = ["#2da6f9","#FFFFF0","#FFE4C4","#32CD32","#FFFF00","#FF0000"];
+
+//是否显示点位
+var layer = null;
+var points=getpoints();    
+generateLayer(points);
+//是否显示点位
+var pointsFlag = false;
+function controlPointsShow(){
+	if(!pointsFlag){
+		layer.setMapv(mapv);
+		pointsFlag = true;
+	}else{
+		layer.setMapv("");
+		pointsFlag = false;
+	}
+}
+
+//生成mapv
+function generateLayer(dataRe){
+        layer = new Mapv.Layer({
+        //mapv: mapv, // 对应的mapv实例
+        zIndex: 1, // 图层层级
+        dataType: 'point', // 数据类型，点类型
+        data: dataRe, // 数据
+        drawType: 'choropleth', // 展示形式
+        drawOptions: { // 绘制参数
+            size: 5, // 点大小
+            // splitList数值表示按数值区间来展示不同颜色的点
+            splitList: [
+            {
+                    
+                    end: -999,
+                    color: colorChoroplethArr[0]
+                },
+                {
+                    start: 0,
+                    end: 20,
+                    color: colorChoroplethArr[1]
+                },{
+                    start: 20,
+                    end: 80,
+                    color: colorChoroplethArr[2]
+                },{
+                    start: 80,
+                    end: 100,
+                    color: colorChoroplethArr[3]
+                }
+            ],
+        }
+    });
+}
+
+ 	/*添加点位监听事件*/
+function getPointDetailInfo(point){
+  var sContent='租车点：' + point.netid + ', ' + point.netname + '<br/>区域：' + point.area + ', ' + point.area2 + '<br/>片区：' + point.subarea + '<br/>经纬度：' + point.lng + ',' +point.lat + '<br/>空满率：'+point.count + '%, ' +'是否下架点：'+point.under+ '<br/>车位数：'+point.bikenum+', ' +'可租车：' + point.bikeusable;
+  var epoint = new BMap.Point(point.lng, point.lat);
+  var infoWindow = new BMap.InfoWindow(sContent, opts); // 创建信息窗口对象 
+  map.openInfoWindow(infoWindow,epoint); //开启信息窗口 
+}
+
+
+    if(!isSupportCanvas()){
+     alert('目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用~')
+    }
+
+
+  
+  var opts = {
+    width : 250, // 信息窗口宽度
+    height: 150, // 信息窗口高度
+    title : "区域信息" , // 信息窗口标题
+    enableMessage:true//设置允许信息窗发送短息
+      };
+  
+/*区域跳转函数*/
+ function openArea(msgname){
+  var prompt='&col1="租车点维表"."区域"&val1="' +msgname+'"&psa1="还车分析"';
+  var urlpath=encodeURI('@{biServer.variables.IP}/saw.dll?dashboard&PortalPath=%2Fshared%2F分析%2F_portal%2F地图监控&Page=片区&Action=Navigate'+prompt);
+  window.open(urlpath);
+ }
+
+/*片区跳转函数*/ 
+ function openSubarea(msgname){
+  var prompt='&col1="租车点维表"."片区"&val1="' +msgname+'"&psa1="还车分析"';
+  var urlpath=encodeURI('@{biServer.variables.IP}/saw.dll?dashboard&PortalPath=%2Fshared%2F分析%2F_portal%2F地图监控&Page=片区&Action=Navigate'+prompt);
+  window.open(urlpath);
+ }
+ 
+/*站点跳转函数*/ 
+ function openPoint(msgname){
+  var prompt='&col1="租车点维表"."站点名称"&val1="' +msgname+'"&psa1="还车分析"';
+  var urlpath=encodeURI('@{biServer.variables.IP}/saw.dll?dashboard&PortalPath=%2Fshared%2F分析%2F_portal%2F租车分析&Page=租车规律&Action=Navigate'+prompt);
+  window.open(urlpath);
+ }
+ 
+
+ /*区域监听事件*/   
+   function showInfo(e){
+    var pname = new Array(polygoncd,polygoncx,polygoncn,polygoncb);
+   var pfunction = new Array(getareacd(),getareacx(),getareacn(),getareacb());
+		var msg={};
+		var p=e.target; 
+   for (i=0;i<pname.length;i++){
+		  if(p instanceof BMap.Polygon && p==pname[i]){
+		    msg=pfunction[i];
+		    var sContent='区域：' + msg.name +'<br/>总站点：'+ msg.pnum_sum + '<br/>正常站点：' + msg.pnum_ok + '<br/>还车紧张站点：' + msg.pnum_man + '<br/>租车紧张站点：' + msg.pnum_kong + '<br/>空满率：' + msg.status + '<br/><a href="#" onclick="javascript:openArea(&quot;'+msg.name+'&quot;)")">查看区域</a>';
+                    var epoint = new BMap.Point(e.point.lng, e.point.lat);
+                    var infoWindow = new BMap.InfoWindow(sContent, opts); // 创建信息窗口对象 
+                    map.openInfoWindow(infoWindow,epoint); //开启信息窗口  
+		    } 
+    }
+	}
+	
+	
+	
+ /*片区监听事件*/
+   function showInfo_sub(e){
+		   var pfunction = new Array(
+		      	getarea3564(),
+						getarea3019(),
+						getarea3048(),
+						getarea3017(),
+						getarea3040(),
+						getarea3018(),
+						getarea3140(),
+						getarea2145(),
+						getarea2381(),
+						getarea2083(),
+						getarea3006(),
+						getarea1080(),
+						getarea3035(),
+						getarea3080(),
+						getarea3021(),
+						getarea3077(),
+						getarea3605(),
+						getarea3712(),
+						getarea3776(),
+						getarea3601(),
+						getarea2051(),
+						getarea4023(),
+						getarea3781(),
+						getarea6007(),
+						getarea2043(),
+						getarea2045(),
+						getarea10001(),
+						getarea1292(),
+						getarea6268(),
+						getarea1354(),
+						getarea6008(),
+						getarea6000(),
+						getarea3780(),
+						getarea3630(),
+						getarea2046(),
+						getarea6247(),
+						getarea5012(),
+						getarea5009(),
+						getarea2005(),
+						getarea1001(),
+						getarea2015(),
+						getarea3773(),
+						getarea2088(),
+						getarea1027(),
+						getarea1410(),
+						getarea3775(),
+						getarea3607(),
+						getarea1150(),
+						getarea1134(),
+						getarea8002(),
+						getarea4261(),
+						getarea2004(),
+						getarea4449(),
+						getarea4002(),
+						getarea5044(),
+						getarea3611(),
+						getarea3772(),
+						getarea2137(),
+						getarea1065(),
+						getarea5004(),
+						getarea6006(),
+						getarea2100(),
+						getarea2013(),
+						getarea2008(),
+						getarea8003(),
+						getarea2003(),
+						getarea2026(),
+						getarea3544(),
+						getarea2157(),
+						getarea8004(),
+						getarea5101(),
+						getarea1015(),
+						getarea5001(),
+						getarea5099(),
+						getarea6250(),
+						getarea4017(),
+						getarea5014(),
+						getarea1002(),
+						getarea3690(),
+						getarea6248(),
+						getarea1071(),
+						getarea1326(),
+						getarea6004(),
+						getarea6021(),
+						getarea2123(),
+						getarea2001(),
+						getarea4007(),
+						getarea5087(),
+						getarea6017(),
+						getarea1006(),
+						getarea1016(),
+						getarea2120(),
+						getarea2044(),
+						getarea1021(),
+						getarea5013(),
+						getarea5018(),
+						getarea5008(),
+						getarea1063(),
+						getarea3625(),
+						getarea1055(),
+						getarea4014(),
+						getarea5104(),
+						getarea5010(),
+						getarea4012(),
+						getarea5544(),
+						getarea5032(),
+						getarea4004(),
+						getarea4047(),
+						getarea6022(),
+						getarea4430(),
+						getarea1023(),
+						getarea1054(),
+						getarea5023(),
+						getarea5037(),
+						getarea1037(),
+						getarea2069(),
+						getarea1081(),
+						getarea1430(),
+						getarea1003(),
+						getarea4015(),
+						getarea1019(),
+						getarea1033(),
+						getarea1028()
+		      );
+				var smsg={};
+				var p=e.target; 
+		   for (i=0;i<subPolygon_array.length;i++){
+				  if(p instanceof BMap.Polygon && p==subPolygon_array[i]){
+				    smsg=pfunction[i];
+				    var sContent='区域：' + smsg.name +'<br/>总站点：'+ smsg.pnum_sum + '<br/>正常站点：' + smsg.pnum_ok + '<br/>还车紧张站点：' + smsg.pnum_man + '<br/>租车紧张站点：' + smsg.pnum_kong + '<br/>空满率：' + smsg.status;
+		                    var epoint = new BMap.Point(e.point.lng, e.point.lat);
+		                    var infoWindow = new BMap.InfoWindow(sContent, opts); // 创建信息窗口对象 
+		                    map.openInfoWindow(infoWindow,epoint); //开启信息窗口  
+				    } 
+		    }
+	} 
+ 
+
+    /*城东，南，西，北*/
+    var polygoncd=getpolygoncd();
+   polygoncd.addEventListener('click',showInfo); 
+    var polygoncx=getpolygoncx();
+   polygoncx.addEventListener('click',showInfo);
+    var polygoncn=getpolygoncn();
+    polygoncn.addEventListener('click',showInfo);
+    var polygoncb=getpolygoncb(); 
+    polygoncb.addEventListener('click',showInfo);
+    
+    /*定义区域数组*/
+    
+    var polygon_array = [polygoncd,polygoncx,polygoncn,polygoncb];
+
+    
+
+    
+    /*区域图层叠加*/ 
+    /*map.addOverlay(polygoncd); 
+    map.addOverlay(polygoncx);  
+    map.addOverlay(polygoncn);  
+    map.addOverlay(polygoncb);  */
+    
+    for (i in polygon_array){
+    	map.addOverlay(polygon_array[i]);
+    	}
+    //map.addOverlay(polygon_array);
+    
+  /*区域添加方法*/  
+  	function add_polygon(){
+	    for (i in polygon_array){
+	    		map.addOverlay(polygon_array[i]);
+	    	}		
+  		}
+  		
+  /*区域删除方法*/
+  	function dele_polygon(){
+  		for (i in polygon_array){
+  				map.removeOverlay(polygon_array[i]);
+  			}
+  		}
+    
+/*.....................................................................以下添加片区..............................................................................................*/
+
+    /*片区*/
+var polygon3564 = getpolygon3564();
+var polygon3019 = getpolygon3019();
+var polygon3048 = getpolygon3048();
+var polygon3017 = getpolygon3017();
+var polygon3040 = getpolygon3040();
+var polygon3018 = getpolygon3018();
+var polygon3140 = getpolygon3140();
+var polygon2145 = getpolygon2145();
+var polygon2381 = getpolygon2381();
+var polygon2083 = getpolygon2083();
+var polygon3006 = getpolygon3006();
+var polygon1080 = getpolygon1080();
+var polygon3035 = getpolygon3035();
+var polygon3080 = getpolygon3080();
+var polygon3021 = getpolygon3021();
+var polygon3077 = getpolygon3077();
+var polygon3605 = getpolygon3605();
+var polygon3712 = getpolygon3712();
+var polygon3776 = getpolygon3776();
+var polygon3601 = getpolygon3601();
+var polygon2051 = getpolygon2051();
+var polygon4023 = getpolygon4023();
+var polygon3781 = getpolygon3781();
+var polygon6007 = getpolygon6007();
+var polygon2043 = getpolygon2043();
+var polygon2045 = getpolygon2045();
+var polygon10001 = getpolygon10001();
+var polygon1292 = getpolygon1292();
+var polygon6268 = getpolygon6268();
+var polygon1354 = getpolygon1354();
+var polygon6008 = getpolygon6008();
+var polygon6000 = getpolygon6000();
+var polygon3780 = getpolygon3780();
+var polygon3630 = getpolygon3630();
+var polygon2046 = getpolygon2046();
+var polygon6247 = getpolygon6247();
+var polygon5012 = getpolygon5012();
+var polygon5009 = getpolygon5009();
+var polygon2005 = getpolygon2005();
+var polygon1001 = getpolygon1001();
+var polygon2015 = getpolygon2015();
+var polygon3773 = getpolygon3773();
+var polygon2088 = getpolygon2088();
+var polygon1027 = getpolygon1027();
+var polygon1410 = getpolygon1410();
+var polygon3775 = getpolygon3775();
+var polygon3607 = getpolygon3607();
+var polygon1150 = getpolygon1150();
+var polygon1134 = getpolygon1134();
+var polygon8002 = getpolygon8002();
+var polygon4261 = getpolygon4261();
+var polygon2004 = getpolygon2004();
+var polygon4449 = getpolygon4449();
+var polygon4002 = getpolygon4002();
+var polygon5044 = getpolygon5044();
+var polygon3611 = getpolygon3611();
+var polygon3772 = getpolygon3772();
+var polygon2137 = getpolygon2137();
+var polygon1065 = getpolygon1065();
+var polygon5004 = getpolygon5004();
+var polygon6006 = getpolygon6006();
+var polygon2100 = getpolygon2100();
+var polygon2013 = getpolygon2013();
+var polygon2008 = getpolygon2008();
+var polygon8003 = getpolygon8003();
+var polygon2003 = getpolygon2003();
+var polygon2026 = getpolygon2026();
+var polygon3544 = getpolygon3544();
+var polygon2157 = getpolygon2157();
+var polygon8004 = getpolygon8004();
+var polygon5101 = getpolygon5101();
+var polygon1015 = getpolygon1015();
+var polygon5001 = getpolygon5001();
+var polygon5099 = getpolygon5099();
+var polygon6250 = getpolygon6250();
+var polygon4017 = getpolygon4017();
+var polygon5014 = getpolygon5014();
+var polygon1002 = getpolygon1002();
+var polygon3690 = getpolygon3690();
+var polygon6248 = getpolygon6248();
+var polygon1071 = getpolygon1071();
+var polygon1326 = getpolygon1326();
+var polygon6004 = getpolygon6004();
+var polygon6021 = getpolygon6021();
+var polygon2123 = getpolygon2123();
+var polygon2001 = getpolygon2001();
+var polygon4007 = getpolygon4007();
+var polygon5087 = getpolygon5087();
+var polygon6017 = getpolygon6017();
+var polygon1006 = getpolygon1006();
+var polygon1016 = getpolygon1016();
+var polygon2120 = getpolygon2120();
+var polygon2044 = getpolygon2044();
+var polygon1021 = getpolygon1021();
+var polygon5013 = getpolygon5013();
+var polygon5018 = getpolygon5018();
+var polygon5008 = getpolygon5008();
+var polygon1063 = getpolygon1063();
+var polygon3625 = getpolygon3625();
+var polygon1055 = getpolygon1055();
+var polygon4014 = getpolygon4014();
+var polygon5104 = getpolygon5104();
+var polygon5010 = getpolygon5010();
+var polygon4012 = getpolygon4012();
+var polygon5544 = getpolygon5544();
+var polygon5032 = getpolygon5032();
+var polygon4004 = getpolygon4004();
+var polygon4047 = getpolygon4047();
+var polygon6022 = getpolygon6022();
+var polygon4430 = getpolygon4430();
+var polygon1023 = getpolygon1023();
+var polygon1054 = getpolygon1054();
+var polygon5023 = getpolygon5023();
+var polygon5037 = getpolygon5037();
+var polygon1037 = getpolygon1037();
+var polygon2069 = getpolygon2069();
+var polygon1081 = getpolygon1081();
+var polygon1430 = getpolygon1430();
+var polygon1003 = getpolygon1003();
+var polygon4015 = getpolygon4015();
+var polygon1019 = getpolygon1019();
+var polygon1033 = getpolygon1033();
+var polygon1028 = getpolygon1028();
+
+/*定义片区数组*/
+
+var subPolygon_array = [
+polygon3564,
+polygon3019,
+polygon3048,
+polygon3017,
+polygon3040,
+polygon3018,
+polygon3140,
+polygon2145,
+polygon2381,
+polygon2083,
+polygon3006,
+polygon1080,
+polygon3035,
+polygon3080,
+polygon3021,
+polygon3077,
+polygon3605,
+polygon3712,
+polygon3776,
+polygon3601,
+polygon2051,
+polygon4023,
+polygon3781,
+polygon6007,
+polygon2043,
+polygon2045,
+polygon10001,
+polygon1292,
+polygon6268,
+polygon1354,
+polygon6008,
+polygon6000,
+polygon3780,
+polygon3630,
+polygon2046,
+polygon6247,
+polygon5012,
+polygon5009,
+polygon2005,
+polygon1001,
+polygon2015,
+polygon3773,
+polygon2088,
+polygon1027,
+polygon1410,
+polygon3775,
+polygon3607,
+polygon1150,
+polygon1134,
+polygon8002,
+polygon4261,
+polygon2004,
+polygon4449,
+polygon4002,
+polygon5044,
+polygon3611,
+polygon3772,
+polygon2137,
+polygon1065,
+polygon5004,
+polygon6006,
+polygon2100,
+polygon2013,
+polygon2008,
+polygon8003,
+polygon2003,
+polygon2026,
+polygon3544,
+polygon2157,
+polygon8004,
+polygon5101,
+polygon1015,
+polygon5001,
+polygon5099,
+polygon6250,
+polygon4017,
+polygon5014,
+polygon1002,
+polygon3690,
+polygon6248,
+polygon1071,
+polygon1326,
+polygon6004,
+polygon6021,
+polygon2123,
+polygon2001,
+polygon4007,
+polygon5087,
+polygon6017,
+polygon1006,
+polygon1016,
+polygon2120,
+polygon2044,
+polygon1021,
+polygon5013,
+polygon5018,
+polygon5008,
+polygon1063,
+polygon3625,
+polygon1055,
+polygon4014,
+polygon5104,
+polygon5010,
+polygon4012,
+polygon5544,
+polygon5032,
+polygon4004,
+polygon4047,
+polygon6022,
+polygon4430,
+polygon1023,
+polygon1054,
+polygon5023,
+polygon5037,
+polygon1037,
+polygon2069,
+polygon1081,
+polygon1430,
+polygon1003,
+polygon4015,
+polygon1019,
+polygon1033,
+polygon1028,
+];
+
+
+	/*片区添加监听*/
+	for (i in subPolygon_array){
+				subPolygon_array[i].addEventListener('click',showInfo_sub);
+		}
+
+
+/*片区添加*/
+
+function add_subPolygon(){
+		for (i in subPolygon_array){
+				 map.addOverlay(subPolygon_array[i]);
+			}
+	}
+	
+/*片区删除*/
+
+function dele_subPolygon(){
+		for (i in subPolygon_array){
+				map.removeOverlay(subPolygon_array[i]);
+			}
+	}
+
+// map.getZoom();获得地图当前缩放级别
+
+
+
+function change_mapOver(){
+	  if (map.getZoom()<=12){
+				dele_subPolygon();
+				add_polygon();
+				layer.setMapv('');
+	  		pointsFlag = false;	
+	  }else if(map.getZoom()==13){
+	  	  dele_polygon();
+	  	  add_subPolygon();
+	  	  layer.setMapv('');
+	  		pointsFlag = false;		  	  
+	  	}else if(map.getZoom()==14){
+	  	      add_subPolygon();
+	  	  	  layer.setMapv(mapv);
+	  				pointsFlag = true;	
+	  	  }else if(map.getZoom()>=15){
+	  	  	  dele_polygon();
+	  			  dele_subPolygon();
+	  			}
+	}
+
+
+
+//map.addEventListener("zoomstart",change_mapOver);
+map.addEventListener("zoomend",change_mapOver);
+
+
+
+/*	 function refreshmap(){
+    map.clearOverlays();
+   // map.setMapStyle({style:'dark'});
+    var polygoncd=getpolygoncd();
+    var polygoncx=getpolygoncx();
+    var polygoncn=getpolygoncn();
+    var polygoncb=getpolygoncb();
+    map.addOverlay(polygoncd);  
+    map.addOverlay(polygoncx);  
+    map.addOverlay(polygoncn);  
+    map.addOverlay(polygoncb);  
+  }  */
+
+/*切换空满率时，alert事件*/
+function qieAlert(){
+		alert("目前储车量数据取不到，待手持POS机开发完成后,空满率计算可以加入区域的储车量");
+}
+
+
+ //判断浏览区是否支持canvas
+    function isSupportCanvas(){
+        var elem = document.createElement('canvas');
+        return !!(elem.getContext && elem.getContext('2d'));
+    }
+
+/*重置中心点
+var c_area="全城";
+var lon_A;
+var lat_B;
+var level_C;
+var sts=0;
+function resetlocation(){
+	if(sts!=0&&c_area=='全城'){
+		map.reset();
+		sts=0;
+	}
+	else if (c_area!='全城'){
+		map.setCenter(new BMap.Point(lon_A,lat_B));
+		map.setZoom(level_C);
+		sts=1;
+	}
+}*/
+
+</script> 
+</body>
+</html>

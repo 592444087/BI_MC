@@ -1,0 +1,8 @@
+{
+    "name" : "Flow_Map",
+    "description" : "流向图测试",
+    "icon" : "extension",
+    "type" : "visualization",
+    "version": "0.1.0",
+    "author": "wuxw"
+}
